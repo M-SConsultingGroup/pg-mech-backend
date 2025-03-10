@@ -9,10 +9,6 @@ processes = []
 [env]
   NODE_ENV = "production"
 
-[mounts]
-  source = "pg_mech_backend_data"
-  destination = "/usr/src/app"
-  
 [services]
   http_checks = []
   internal_port = 4000
