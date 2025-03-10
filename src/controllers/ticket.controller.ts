@@ -14,7 +14,7 @@ export class TicketController {
   }
 
   @Get('get-all')
-  @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt'))
   async getTickets(): Promise<Ticket[]> {
     return this.ticketService.getAllTickets();
   }
