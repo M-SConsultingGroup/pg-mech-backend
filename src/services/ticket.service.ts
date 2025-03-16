@@ -1,6 +1,6 @@
 // src/services/ticket.service.ts
-import TicketModel from '@/models/ticket';
-import Sequence from '@/models/sequence';
+import TicketModel from '@/models/schema/ticket';
+import Sequence from '@/models/schema/sequence';
 import { Ticket as TicketInterface } from '@/common/interfaces';
 import moment from 'moment-timezone';
 import { Injectable } from '@nestjs/common';

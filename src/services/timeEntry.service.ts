@@ -1,5 +1,5 @@
 // src/services/timeEntry.service.ts
-import TimeEntryModel from '@/models/timeEntry';
+import TimeEntryModel from '@/models/schema/timeEntry';
 import { TimeEntry } from '@/common/interfaces';
 import { Injectable } from '@nestjs/common';
 

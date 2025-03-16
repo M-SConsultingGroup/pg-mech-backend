@@ -13,7 +13,7 @@ export class TicketController {
     return this.ticketService.createTicket(createTicketDto);
   }
 
-  @Get('get-all')
+  @Get('all')
   // @UseGuards(AuthGuard('jwt'))
   async getTickets(): Promise<Ticket[]> {
     return this.ticketService.getAllTickets();
