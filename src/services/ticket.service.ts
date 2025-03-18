@@ -1,20 +1,20 @@
 // src/services/ticket.service.ts
 import TicketModel from '@/models/schema/ticket';
 import Sequence from '@/models/schema/sequence';
-import { Ticket as TicketInterface } from '@/common/interfaces';
-import * as moment from 'moment-timezone';
+import { Ticket } from '@/common/interfaces';
+import moment from 'moment-timezone';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class TicketService {
-	async createTicket(data): Promise<TicketInterface> {
+	async createTicket(data): Promise<Ticket> {
 		const ticketNumber = await this.generateTicketNumber();
 		const ticket = new TicketModel({ ...data, ticketNumber });
 		await ticket.save();
-		return ticket.toObject() as TicketInterface;
+		return ticket.toObject() as Ticket;
 	}
 
-	async updateTicket(id, data): Promise<TicketInterface | null> {
+	async updateTicket(id, data): Promise<Ticket | null> {
 		data.updatedAt = new Date();
 		if (data.assignedTo === 'Unassigned') {
 			data.status = 'New';
@@ -24,22 +24,29 @@ export class TicketService {
 			data.priority = '';
 		}
 		const ticket = await TicketModel.findByIdAndUpdate(id, data, { new: true, runValidators: true });
-		return ticket ? (ticket.toObject() as TicketInterface) : null;
+		return ticket ? (ticket.toObject() as Ticket) : null;
 	}
 
-	async getTicketById(id): Promise<TicketInterface | null> {
+	async getTicketById(id): Promise<Ticket | null> {
 		const ticket = await TicketModel.findById(id);
-		return ticket ? (ticket.toObject() as TicketInterface) : null;
+		return ticket ? (ticket.toObject() as Ticket) : null;
 	}
 
-	async getAllTickets(): Promise<TicketInterface[]> {
-		const tickets = await TicketModel.find();
-		return tickets.map(ticket => ticket.toObject() as TicketInterface);
+	async getAllTickets(filters: { status?: string; user?: string }): Promise<Ticket[]> {
+		const query: any = {};
+		if (filters.status) {
+			query.status = filters.status;
+		}
+		if (filters.user) {
+			query.assignedTo = filters.user;
+		}
+		const tickets = await TicketModel.find(query);
+		return tickets.map(ticket => ticket.toObject() as Ticket);
 	}
 
-	async deleteTicket(id): Promise<TicketInterface | null> {
+	async deleteTicket(id): Promise<Ticket | null> {
 		const ticket = await TicketModel.findByIdAndDelete(id);
-		return ticket ? (ticket.toObject() as TicketInterface) : null;
+		return ticket ? (ticket.toObject() as Ticket) : null;
 	}
 
 	async conditionalDeleteTicket(id): Promise<void> {
@@ -52,7 +59,7 @@ export class TicketService {
 		}
 	}
 
-	async rescheduleTicket(id, timeAvailability): Promise<TicketInterface> {
+	async rescheduleTicket(id, timeAvailability): Promise<Ticket> {
 		const ticket = await this.getTicketById(id);
 		if (!ticket) {
 			throw new Error('Ticket not found');

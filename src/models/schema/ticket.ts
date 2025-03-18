@@ -2,7 +2,7 @@ import { Schema, model, Document } from 'mongoose';
 import { Ticket } from '@/common/interfaces';
 import { TICKET_STATUSES } from '@/common/constants';
 
-interface ITicket extends Omit<Ticket, '_id'>, Document { }
+interface ITicket extends Omit<Ticket, 'id'>, Document {}
 
 const ticketSchema = new Schema<ITicket>({
   ticketNumber: { type: String, required: true, unique: true },
