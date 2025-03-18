@@ -6,9 +6,10 @@ import { TimeEntryService } from './services/timeEntry.service';
 import { UserService } from './services/user.service';
 import { UserController } from './controllers/user.controller';
 import { TicketService } from './services/ticket.service';
+import { AuthModule } from './auth.module';
 
 @Module({
-  imports: [],
+  imports: [AuthModule],
   controllers: [EmailController, TicketController, UserController],
   providers: [EmailService, TimeEntryService, UserService, TicketService],
 })

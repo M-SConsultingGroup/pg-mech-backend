@@ -30,7 +30,6 @@ export class UserService {
     return { token, user };
   }
 
-
   async createUser(data): Promise<User> {
     const user = new UserModel(data);
     await user.save();
@@ -42,8 +41,8 @@ export class UserService {
     return user ? (user.toObject() as User) : null;
   }
 
-  async getAllUsers(): Promise<User[]> {
+  async getAllUsers(): Promise<String[]> {
     const users = await UserModel.find();
-    return users.map(user => user.toObject() as User);
+    return users.filter(user => !user.is_admin).map(user => user.username);
   }
 }
