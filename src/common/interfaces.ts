@@ -1,7 +1,7 @@
 // src/common/interfaces.ts
 
 export interface Ticket {
-	_id: string;
+	id: string;
 	ticketNumber: string;
 	name: string;
 	email: string;
