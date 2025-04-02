@@ -1,9 +1,7 @@
 import { Schema, model, Document } from 'mongoose';
 import { TimeEntry } from '@/common/interfaces';
 
-interface ITimeEntry extends TimeEntry, Document { }
-
-const timeEntrySchema = new Schema<ITimeEntry>({
+const timeEntrySchema = new Schema<TimeEntry>({
   user: { type: String, required: true },
   ticket: { type: String, required: true },
   timeRanges: [{
