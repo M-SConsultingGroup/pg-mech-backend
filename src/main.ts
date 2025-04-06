@@ -19,6 +19,8 @@ async function bootstrap() {
       return new BadRequestException(errors);
     },
   }));
+
+  app.enableCors();
   
   await app.listen(4000);
 }
