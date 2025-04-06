@@ -2,7 +2,7 @@
 import TicketModel from '@/models/schema/ticket';
 import Sequence from '@/models/schema/sequence';
 import { Ticket } from '@/common/interfaces';
-import moment from 'moment-timezone';
+import * as moment from 'moment-timezone';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
