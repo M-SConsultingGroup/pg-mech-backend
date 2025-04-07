@@ -32,7 +32,7 @@ export interface User {
 	id: string,
 	username: string;
 	password: string;
-	is_admin: boolean;
+	isAdmin: boolean;
 }
 
 export interface TimeRange {
