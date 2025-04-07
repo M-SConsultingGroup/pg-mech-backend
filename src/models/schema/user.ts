@@ -5,7 +5,7 @@ const userSchema = new Schema<User>(
   {
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    is_admin: { type: Boolean, required: true },
+    isAdmin: { type: Boolean, required: true },
   },
   {
     collection: 'users',
@@ -15,7 +15,9 @@ const userSchema = new Schema<User>(
         // Create a new object with `id` at the top
         return {
           id: ret._id, // Map _id to id
+          isAdmin: ret.is_admin, // Map is_admin to isAdmin
           ...ret, // Spread the rest of the properties
+          is_admin: undefined, // Remove is_admin
           _id: undefined, // Remove _id
           __v: undefined, // Remove __v
         };
@@ -27,7 +29,9 @@ const userSchema = new Schema<User>(
         // Create a new object with `id` at the top
         return {
           id: ret._id, // Map _id to id
+          isAdmin: ret.is_admin, // Map is_admin to isAdmin
           ...ret, // Spread the rest of the properties
+          is_admin: undefined, // Remove is_admin
           _id: undefined, // Remove _id
           __v: undefined, // Remove __v
         };
