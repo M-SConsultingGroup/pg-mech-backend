@@ -9,7 +9,7 @@ import { LoginResponse } from '@/models/dto/user.dto';
 @Injectable()
 export class UserService {
   async login(username: string, password: string): Promise<Partial<LoginResponse>> {
-    const user = await UserModel.findOne({ username }).exec();
+    const user = (await UserModel.findOne({ username }).exec()).toObject() as User;
     if (!user) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
@@ -22,14 +22,13 @@ export class UserService {
 
     // Generate a token
     const token = jwt.sign(
-      { id: user._id, username: user.username, isAdmin: user.is_admin },
+      { id: user.id, username: user.username, isAdmin: user.isAdmin },
       process.env.JWT_SECRET,
       { expiresIn: '30m' }
     );
 
     return { token, user };
   }
-
 
   async createUser(data): Promise<User> {
     const user = new UserModel(data);
@@ -42,8 +41,9 @@ export class UserService {
     return user ? (user.toObject() as User) : null;
   }
 
-  async getAllUsers(): Promise<User[]> {
+  async getAllUsers(): Promise<String[]> {
     const users = await UserModel.find();
-    return users.map(user => user.toObject() as User);
+    users.map(user => user.toObject() as User);
+    return users.filter(user => !user.isAdmin).map(user => user.username);
   }
 }

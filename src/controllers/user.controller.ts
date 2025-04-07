@@ -4,6 +4,7 @@ import { UserService } from '@/services/user.service';
 import { User } from '@/common/interfaces';
 import { AuthGuard } from '@nestjs/passport';
 import { LoginRequest, LoginResponse } from '@/models/dto/user.dto';
+import { AdminGuard } from '@/common/admin.guard';
 
 @Controller('users')
 export class UserController {
@@ -16,8 +17,8 @@ export class UserController {
   }
 
   @Get('all')
-  @UseGuards(AuthGuard('jwt'))
-  async getAllUsers(): Promise<User[]> {
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  async getAllUsers(): Promise<String[]> {
     return this.userService.getAllUsers();
   }
 
@@ -29,8 +30,8 @@ export class UserController {
     return {
       status: 200,
       message: 'Login successful',
-      token: token,  // Returning the token from the service
-      user: user,  // Returning the user object from the service
+      token: token,
+      user: user,
     };
   }
 

@@ -1,5 +1,5 @@
 // src/controllers/ticket.controller.ts
-import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { TicketService } from '@/services/ticket.service';
 import { Ticket } from '@/common/interfaces';
 import { AuthGuard } from '@nestjs/passport';
@@ -14,17 +14,17 @@ export class TicketController {
   }
 
   @Get('all')
-  // @UseGuards(AuthGuard('jwt'))
-  async getTickets(): Promise<Ticket[]> {
-    return this.ticketService.getAllTickets();
+  async getTickets(@Query('status') status?: string, @Query('user') user?: string): Promise<Ticket[]> {
+    return this.ticketService.getAllTickets({status, user});
   }
 
   @Get(':id')
+  // @UseGuards(AuthGuard('jwt'))
   async getTicket(@Param('id') id: string): Promise<Ticket | null> {
     return this.ticketService.getTicketById(id);
   }
 
-  @Patch(':id')
+  @Post(':id')
   async updateTicket(@Param('id') id: string, @Body() updateTicketDto: Partial<Ticket>): Promise<Ticket | null> {
     return this.ticketService.updateTicket(id, updateTicketDto);
   }

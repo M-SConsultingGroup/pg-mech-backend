@@ -1,7 +1,7 @@
 // src/common/interfaces.ts
 
 export interface Ticket {
-	_id: string;
+	id: string;
 	ticketNumber: string;
 	name: string;
 	email: string;
@@ -29,9 +29,10 @@ export interface Parts {
 }
 
 export interface User {
+	id: string,
 	username: string;
 	password: string;
-	is_admin: boolean;
+	isAdmin: boolean;
 }
 
 export interface TimeRange {
