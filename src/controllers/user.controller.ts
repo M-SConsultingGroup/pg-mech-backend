@@ -25,14 +25,7 @@ export class UserController {
   @Post('login')
   @HttpCode(200)
   async login(@Body() loginDto: LoginRequest): Promise<LoginResponse> {
-    const {token, user} = await this.userService.login(loginDto.username, loginDto.password);
-
-    return {
-      status: 200,
-      message: 'Login successful',
-      token: token,
-      user: user,
-    };
+    return await this.userService.login(loginDto.username, loginDto.password);
   }
 
   @Get(':id')
