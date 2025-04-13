@@ -1,11 +1,12 @@
 // src/main.ts
 import * as dotenv from 'dotenv';
-dotenv.config();
-
 import { NestFactory } from '@nestjs/core';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { connectToDatabase } from './database/connection';
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { json } from 'express';
+
+dotenv.config();
 
 async function bootstrap() {
   await connectToDatabase();
@@ -21,9 +22,8 @@ async function bootstrap() {
   }));
 
   app.enableCors();
-  
-  app.enableCors();
-  
+  app.setGlobalPrefix('api');
+  app.use(json({ limit: '50mb' }));  
   await app.listen(4000);
 }
 bootstrap();
