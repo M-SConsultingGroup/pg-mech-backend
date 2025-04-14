@@ -8,7 +8,7 @@ import { LoginResponse } from '@/models/dto/user.dto';
 
 @Injectable()
 export class UserService {
-  async login(username: string, password: string): Promise<Partial<LoginResponse>> {
+  async login(username: string, password: string): Promise<LoginResponse> {
     const user = (await UserModel.findOne({ username }).exec()).toObject() as User;
     if (!user) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
@@ -20,14 +20,58 @@ export class UserService {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
 
-    // Generate a token
-    const token = jwt.sign(
+    // Generate access token (short-lived)
+    const token = this.generateAccessToken(user);
+    
+    // Generate refresh token (long-lived)
+    const refreshToken = this.generateRefreshToken(user);
+    
+    // Save refresh token to user document
+    await UserModel.findByIdAndUpdate(user.id, { refreshToken });
+
+    return {
+      status: 200,
+      message: 'Login successful',
+      token, 
+      refreshToken,
+      user: {
+        id: user.id,
+        username: user.username,
+        isAdmin: user.isAdmin,
+      }
+    };
+  }
+
+  private generateAccessToken(user: User): string {
+    return jwt.sign(
       { id: user.id, username: user.username, isAdmin: user.isAdmin },
       process.env.JWT_SECRET,
-      { expiresIn: '30m' }
+      { expiresIn: '15m' } // Short expiration for security
     );
+  }
 
-    return { token, user };
+  private generateRefreshToken(user: User): string {
+    return jwt.sign(
+      { id: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' } // Longer expiration for refresh tokens
+    );
+  }
+
+  async refreshAccessToken(refreshToken: string): Promise<{ token: string }> {
+    try {
+      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET) as { id: string };
+      const user = await UserModel.findById(decoded.id);
+      
+      if (!user || user.refreshToken !== refreshToken) {
+        throw new HttpException('Invalid refresh token', HttpStatus.UNAUTHORIZED);
+      }
+
+      const newToken = this.generateAccessToken(user.toObject() as User);
+      return { token: newToken };
+    } catch (error) {
+      throw new HttpException('Invalid refresh token', HttpStatus.UNAUTHORIZED);
+    }
   }
 
   async createUser(data): Promise<User> {
