@@ -34,6 +34,7 @@ jobs:
           cat <<EOF > .env
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}
+          MONGODB_URI=${{ secrets.MONGODB_URI }}
           EOF
 
           # Build the Docker image with build args
