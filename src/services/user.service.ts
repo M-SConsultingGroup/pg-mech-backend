@@ -58,6 +58,16 @@ export class UserService {
     );
   }
 
+  async validateToken(token: string): Promise<any> {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (typeof decoded === 'string' || decoded?.exp < Date.now() / 1000) {
+      return { valid : false, decoded };
+    }
+    const user = await UserModel.findById(decoded.id);
+
+    return { ...decoded, user: user ? user.toObject() : null, valid:true   };
+  }
+
   async refreshAccessToken(refreshToken: string): Promise<{ token: string }> {
     try {
       const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET) as { id: string };
