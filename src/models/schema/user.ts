@@ -14,7 +14,6 @@ const userSchema = new Schema<User>(
       virtuals: true,
       transform: (doc, ret) => {
         return {
-          id: ret._id, // Map _id to id
           ...ret,
           _id: undefined, // Remove _id
           __v: undefined, // Remove __v
@@ -25,7 +24,6 @@ const userSchema = new Schema<User>(
       virtuals: true,
       transform: (doc, ret) => {
         return {
-          id: ret._id, // Map _id to id
           ...ret,
           _id: undefined, // Remove _id
           __v: undefined, // Remove __v
