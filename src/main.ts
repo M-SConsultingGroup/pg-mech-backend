@@ -10,7 +10,7 @@ dotenv.config();
 
 async function bootstrap() {
   await connectToDatabase();
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: false });
 
   // Apply global validation pipe
   app.useGlobalPipes(new ValidationPipe({
@@ -21,7 +21,6 @@ async function bootstrap() {
     },
   }));
 
-  app.enableCors({allowedHeaders: '*'});
   app.setGlobalPrefix('api');
   app.use(json({ limit: '50mb' }));  
   await app.listen(4000);
