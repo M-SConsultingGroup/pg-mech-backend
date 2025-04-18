@@ -3,7 +3,7 @@ import TicketModel from '@/models/schema/ticket';
 import Sequence from '@/models/schema/sequence';
 import { Ticket } from '@/common/interfaces';
 import * as moment from 'moment-timezone';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class TicketService {
@@ -44,9 +44,21 @@ export class TicketService {
 		return tickets.map(ticket => ticket.toObject() as Ticket);
 	}
 
-	async deleteTicket(id): Promise<Ticket | null> {
-		const ticket = await TicketModel.findByIdAndDelete(id);
-		return ticket ? (ticket.toObject() as Ticket) : null;
+	async deleteTicket(id: string, isAdmin?: boolean): Promise<Ticket | null> {
+		let ticket = await this.getTicketById(id);
+		if (!ticket) {
+			throw new BadRequestException('Ticket not found');
+		}
+		if (!isAdmin) {
+			if (ticket.assignedTo && ticket.assignedTo !== 'Unassigned') {
+				throw new BadRequestException('Cannot delete an assigned ticket');
+			}
+			if (ticket.status === 'Open') {
+				throw new BadRequestException('Cannot delete a ticket in Open status');
+			}
+		}
+		await TicketModel.findByIdAndDelete(id);
+		return ticket;
 	}
 
 	async conditionalDeleteTicket(id): Promise<void> {

@@ -27,13 +27,21 @@ export class TicketController {
   }
 
   @Post(':id')
+  @UseGuards(AuthGuard('jwt'))
   @HttpCode(200)
-  async updateTicket(@Param('id') id: string, @Body() updateTicketDto: Partial<Ticket>): Promise<Ticket | null> {
+  async updateTicket(@Param('id') id: string, @Body() updateTicketDto: Partial<Ticket>): Promise<Ticket | { statusCode: number; message: string }> {
     return this.ticketService.updateTicket(id, updateTicketDto);
   }
 
+  @Post('time/:id')
+  @HttpCode(200)
+  async updateTimeTicket(@Param('id') id: string, @Body() updateTicketDto: Partial<Ticket>): Promise<Ticket | { statusCode: number; message: string }> {
+    const { timeAvailability } = updateTicketDto;
+    return this.ticketService.updateTicket(id, { timeAvailability });
+  }
+
   @Delete(':id')
-  async deleteTicket(@Param('id') id: string): Promise<Ticket | null> {
+  async deleteTicket(@Param('id') id: string): Promise<Ticket | { statusCode: number; message: string }> {
     return this.ticketService.deleteTicket(id);
   }
 }
