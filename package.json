@@ -1,8 +1,8 @@
 {
   "name": "pg-mech-backend",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
-  "author": "",
+  "author": "Mankirat Singh",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -29,6 +29,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.7",
+    "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "moment-timezone": "^0.5.48",
     "mongoose": "^8.12.1",

@@ -1,34 +1,63 @@
 import { Injectable } from '@nestjs/common';
-import nodemailer from 'nodemailer';
+import * as nodemailer from 'nodemailer';
+
+interface EmailOptions {
+	to: string;
+	subject: string;
+	message: string;
+	isHtml?: boolean;
+}
 
 @Injectable()
 export class EmailService {
-	async sendEmail(to: string, subject: string, message: string): Promise<any> {
+	private transporter = nodemailer.createTransport({
+		host: 'mail.privateemail.com',
+		port: 465,
+		secure: true,
+		auth: {
+			user: 'info@pgmechanical.us',
+			pass: process.env.EMAIL_PASSWORD,
+		},
+		pool: true, // Use connection pooling
+		maxConnections: 5,
+		rateDelta: 1000, // Rate limit to 1 email per second
+		rateLimit: 5,
+	});
+
+	async sendEmail({ to, subject, message, isHtml = false }: EmailOptions): Promise<any> {
 		const mailOptions: nodemailer.SendMailOptions = {
-			from: `info@${process.env.NEXT_PUBLIC_SITE_NAME}`,
+			from: '"PG Mechanical Support" <info@pgmechanical.us>',
 			to,
 			subject,
-			text: message,
+			...(isHtml ? { html: message, text: this.htmlToText(message) } : { text: message }),
+			headers: {
+				'X-Mailer': 'PG Mechanical Support System',
+				'X-Priority': '1',
+			},
 		};
 
 		try {
-			const transporter = nodemailer.createTransport(/* your smtp config */);
-			const info = await transporter.sendMail(mailOptions);
+			// Verify connection first
+			await this.transporter.verify();
+			const info = await this.transporter.sendMail(mailOptions);
 
-			// Call saveToSent but do not await or fail on it
-			saveToSent(mailOptions).catch((error) => {
-				console.error("Non-blocking save to Sent error:", error);
-			});
-
-			return { response: info, success: true };
+			return {
+				success: true,
+				messageId: info.messageId,
+				accepted: info.accepted,
+				rejected: info.rejected
+			};
 		} catch (error) {
 			console.error("Email sending error:", error);
-			throw new Error('Internal server error');
+			throw new Error(`Failed to send email: ${error.message}`);
 		}
 	}
-}
 
-// Mock function for saving sent emails, replace with real implementation
-function saveToSent(mailOptions: nodemailer.SendMailOptions) {
-	return Promise.resolve();
+	private htmlToText(html: string): string {
+		// Simple conversion - consider using a library like 'html-to-text' for better results
+		return html
+			.replace(/<[^>]*>/g, ' ')
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
 }
