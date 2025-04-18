@@ -15,6 +15,5 @@ export class LoginRequest {
 
 export class LoginResponse extends APIResponse {
   user: User;
-  refreshToken: string;
   token: string;
 }

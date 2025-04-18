@@ -33,7 +33,7 @@ export interface User {
 	username: string;
 	password?: string;
 	isAdmin: boolean;
-	refreshToken?: string;
+	token?: string;
 }
 
 export interface TimeRange {

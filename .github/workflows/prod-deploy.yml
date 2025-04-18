@@ -46,4 +46,4 @@ jobs:
           sudo docker container prune || true
 
           # Run the new container
-          sudo docker run -d --name pg-mech-backend --env-file .env -p 4000:4000 pg-mech-backend:latest
+          sudo docker run -d --network=pg-mech-network --name pg-mech-backend --env-file .env -p 4000:4000 pg-mech-backend:latest

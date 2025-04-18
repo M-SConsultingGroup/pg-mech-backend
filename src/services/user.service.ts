@@ -23,17 +23,13 @@ export class UserService {
     // Generate access token (short-lived)
     const token = this.generateAccessToken(user);
     
-    // Generate refresh token (long-lived)
-    const refreshToken = this.generateRefreshToken(user);
-    
     // Save refresh token to user document
-    await UserModel.findByIdAndUpdate(user.id, { refreshToken });
+    await UserModel.findByIdAndUpdate(user.id, { token });
 
     return {
       status: 200,
       message: 'Login successful',
-      token, 
-      refreshToken,
+      token,
       user: {
         id: user.id,
         username: user.username,
@@ -46,15 +42,7 @@ export class UserService {
     return jwt.sign(
       { id: user.id, username: user.username, isAdmin: user.isAdmin },
       process.env.JWT_SECRET,
-      { expiresIn: '15m' } // Short expiration for security
-    );
-  }
-
-  private generateRefreshToken(user: User): string {
-    return jwt.sign(
-      { id: user.id },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' } // Longer expiration for refresh tokens
+      { expiresIn: '7d' } // Short expiration for security
     );
   }
 
@@ -68,12 +56,12 @@ export class UserService {
     return { ...decoded, user: user ? user.toObject() : null, valid:true   };
   }
 
-  async refreshAccessToken(refreshToken: string): Promise<{ token: string }> {
+  async refreshAccessToken(token: string): Promise<{ token: string }> {
     try {
-      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET) as { id: string };
+      const decoded = jwt.verify(token, process.env.JWT_SECRET) as { id: string };
       const user = await UserModel.findById(decoded.id);
       
-      if (!user || user.refreshToken !== refreshToken) {
+      if (!user || user.token !== token) {
         throw new HttpException('Invalid refresh token', HttpStatus.UNAUTHORIZED);
       }
 
