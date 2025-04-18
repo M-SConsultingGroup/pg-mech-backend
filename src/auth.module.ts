@@ -12,10 +12,6 @@ import { UserModule } from './user.module';
     PassportModule.register({ defaultStrategy: 'jwt'}),
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '15m' }, // Short expiration for access tokens
-    }),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '7d' }  // Longer expiration for refresh tokens
     }),
   ],
