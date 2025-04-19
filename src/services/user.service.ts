@@ -73,8 +73,24 @@ export class UserService {
   }
 
   async createUser(data): Promise<User> {
-    const user = new UserModel(data);
+    // Hash the password before saving
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const user = new UserModel({ ...data, password: hashedPassword });
     await user.save();
+    return user.toObject() as User;
+  }
+
+  async updatePassword(data): Promise<User> {
+    // Hash the new password before saving
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const user = await UserModel.findByIdAndUpdate(
+      data.id,
+      { password: hashedPassword },
+      { new: true }
+    );
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
     return user.toObject() as User;
   }
 

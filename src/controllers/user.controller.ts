@@ -22,6 +22,12 @@ export class UserController {
     return this.userService.getAllUsers();
   }
 
+  @Get('updatePassword')
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  async updatePassword(@Body() newPassword: string): Promise<User> {
+    return this.userService.updatePassword(newPassword);
+  }
+
   @Post('login')
   @HttpCode(200)
   async login(@Body() loginDto: LoginRequest): Promise<LoginResponse> {
@@ -29,6 +35,7 @@ export class UserController {
   }
 
   @Get(':id')
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   async getUserById(@Param('id') id: string): Promise<User | null> {
     return this.userService.getUserById(id);
   }
