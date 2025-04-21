@@ -34,13 +34,20 @@ export class TicketService {
 
 	async getTicketStats(): Promise<{
 		total: number;
-		[status: string]: number | { [status: string]: number };
+		new: number;
+		open: number;
+		[user: string]: number | { total: number; new: number; open: number };
 	}> {
 		const stats = await TicketModel.aggregate([
 			{
 				$facet: {
-					// Get counts by status for the overall totals
+					// Get overall new and open counts
 					statusStats: [
+						{
+							$match: {
+								status: { $in: ['New', 'Open'] }
+							}
+						},
 						{
 							$group: {
 								_id: '$status',
@@ -48,11 +55,11 @@ export class TicketService {
 							},
 						},
 					],
-					// Get counts by both user and status for the detailed breakdown
-					userStatusStats: [
+					// Get only assigned users' stats
+					userStats: [
 						{
 							$match: {
-								assignedTo: { $exists: true, $ne: '' } // Filter out unassigned tickets
+								assignedTo: { $exists: true, $nin: [null, '', 'Unassigned'] }
 							}
 						},
 						{
@@ -65,7 +72,7 @@ export class TicketService {
 							},
 						},
 					],
-					// Get total count of all tickets
+					// Get total count (including unassigned)
 					total: [
 						{
 							$group: {
@@ -73,48 +80,52 @@ export class TicketService {
 								count: { $sum: 1 },
 							},
 						},
-					],	
+					],
 				},
 			},
 		]);
 
 		const result: {
 			total: number;
-			[key: string]: number | { [status: string]: number };
-		} = { total: 0 };
+			new: number;
+			open: number;
+			[key: string]: number | { total: number; new: number; open: number };
+		} = { total: 0, new: 0, open: 0 };
 
 		if (stats.length > 0) {
 			const [data] = stats;
 
 			// Set total count
-			if (data.total.length > 0) {
-				result.total = data.total[0].count;
-			}
+			result.total = data.total[0]?.count || 0;
 
-			// Add status counts
+			// Set status counts
 			data.statusStats.forEach((stat) => {
-				result[stat._id] = stat.count;
+				if (stat._id === 'New') result.new = stat.count;
+				if (stat._id === 'Open') result.open = stat.count;
 			});
 
-			// Process user stats with status breakdown
-			const userStats: { [user: string]: { [status: string]: number } } = {};
+			// Process user stats
+			const userData = new Map<string, { total: number; new: number; open: number }>();
 
-			data.userStatusStats.forEach((stat) => {
+			data.userStats.forEach((stat) => {
 				const user = stat._id.user;
-				const status = !stat._id.status || stat._id.status === '' ? 'NoStatus' : stat._id.status;
+				const status = stat._id.status;
+				const count = stat.count;
 
-				if (!userStats[user]) {
-					userStats[user] = { total: 0 };
+				if (!userData.has(user)) {
+					userData.set(user, { total: 0, new: 0, open: 0 });
 				}
 
-				userStats[user][status] = (userStats[user][status] || 0) + stat.count;
-				userStats[user].total += stat.count;
+				const userStats = userData.get(user)!;
+				userStats.total += count;
+				if (status === 'New') userStats.new += count;
+				if (status === 'Open') userStats.open += count;
 			});
 
-			// Add user stats to the result
-			for (const [user, stats] of Object.entries(userStats)) {
+			// Add user stats to result
+			userData.forEach((stats, user) => {
 				result[user] = stats;
-			}
+			});
 		}
 
 		return result;
