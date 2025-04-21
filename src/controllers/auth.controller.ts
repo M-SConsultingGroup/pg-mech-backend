@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, HttpStatus, Param, Get, HttpCode, Headers } from '@nestjs/common';
+import { Controller, Post, Body, Res, HttpStatus, Param, Get, HttpCode, Headers, BadRequestException } from '@nestjs/common';
 import { UserService } from '@/services/user.service';
 import { Response } from 'express';
 
@@ -25,7 +25,7 @@ export class AuthController {
     // Extract token from "Bearer <token>"
     const token = authHeader?.split(' ')[1];
     if (!token) {
-      throw new Error('No token provided');
+      throw new BadRequestException('No token provided');
     }
     const response = await this.userService.validateToken(token);
     return response;

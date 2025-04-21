@@ -1,5 +1,5 @@
 // src/controllers/user.controller.ts
-import { Controller, Get, Post, Body, Param, UseGuards, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, HttpCode, Delete } from '@nestjs/common';
 import { UserService } from '@/services/user.service';
 import { User } from '@/common/interfaces';
 import { AuthGuard } from '@nestjs/passport';
@@ -11,7 +11,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('create')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   async createUser(@Body() createUserDto: Partial<User>): Promise<User> {
     return this.userService.createUser(createUserDto);
   }
@@ -22,10 +22,10 @@ export class UserController {
     return this.userService.getAllUsers();
   }
 
-  @Get('updatePassword')
-  @UseGuards(AuthGuard('jwt'), AdminGuard)
-  async updatePassword(@Body() newPassword: string): Promise<User> {
-    return this.userService.updatePassword(newPassword);
+  @Post('updatePassword')
+  @UseGuards(AuthGuard('jwt'))
+  async updatePassword(@Body('username') username: string, @Body('password') newPassword: string): Promise<User> {
+    return this.userService.updatePassword(username, newPassword);
   }
 
   @Post('login')
@@ -38,5 +38,11 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'), AdminGuard)
   async getUserById(@Param('id') id: string): Promise<User | null> {
     return this.userService.getUserById(id);
+  }
+
+  @Delete(':username')
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  async deleteUserById(@Param('username') username: string): Promise<User | null> {
+    return this.userService.deleteUserByUsername(username);
   }
 }

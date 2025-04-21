@@ -1,7 +1,7 @@
 {
   "name": "pg-mech-backend",
-  "version": "0.0.3",
-  "description": "",
+  "version": "0.0.4",
+  "description": "Backend for PG Mech",
   "author": "Mankirat Singh",
   "private": true,
   "license": "UNLICENSED",

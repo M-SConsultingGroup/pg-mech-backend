@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
 interface EmailOptions {
@@ -48,8 +48,7 @@ export class EmailService {
 				rejected: info.rejected
 			};
 		} catch (error) {
-			console.error("Email sending error:", error);
-			throw new Error(`Failed to send email: ${error.message}`);
+			throw new HttpException(`Failed to send email: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
