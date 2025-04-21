@@ -9,20 +9,19 @@ import { LoginResponse } from '@/models/dto/user.dto';
 @Injectable()
 export class UserService {
   async login(username: string, password: string): Promise<LoginResponse> {
-    const user = (await UserModel.findOne({ username }).exec()).toObject() as User;
+    const user = await UserModel.findOne({ username }).exec();
     if (!user) {
-      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+      throw new HttpException('Invalid credentials', HttpStatus.NO_CONTENT);
     }
 
-    // Check the password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
 
-    // Generate access token (short-lived)
+    // Generate access token
     const token = this.generateAccessToken(user);
-    
+
     // Save refresh token to user document
     await UserModel.findByIdAndUpdate(user.id, { token });
 
@@ -31,7 +30,7 @@ export class UserService {
       message: 'Login successful',
       token,
       user: {
-        id: user.id,
+        id: user.id || user._id,
         username: user.username,
         isAdmin: user.isAdmin,
       }
@@ -49,18 +48,18 @@ export class UserService {
   async validateToken(token: string): Promise<any> {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (typeof decoded === 'string' || decoded?.exp < Date.now() / 1000) {
-      return { valid : false, decoded };
+      return { valid: false, decoded };
     }
     const user = await UserModel.findById(decoded.id);
 
-    return { ...decoded, user: user ? user.toObject() : null, valid:true   };
+    return { ...decoded, user: user ? user.toObject() : null, valid: true };
   }
 
   async refreshAccessToken(token: string): Promise<{ token: string }> {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET) as { id: string };
       const user = await UserModel.findById(decoded.id);
-      
+
       if (!user || user.token !== token) {
         throw new HttpException('Invalid refresh token', HttpStatus.UNAUTHORIZED);
       }
@@ -80,17 +79,14 @@ export class UserService {
     return user.toObject() as User;
   }
 
-  async updatePassword(data): Promise<User> {
+  async updatePassword(username: string, password: string): Promise<User> {
     // Hash the new password before saving
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-    const user = await UserModel.findByIdAndUpdate(
-      data.id,
-      { password: hashedPassword },
-      { new: true }
-    );
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await UserModel.findOneAndUpdate({ username: username }, { password: hashedPassword }, { new: true });
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('User not found', HttpStatus.NO_CONTENT);
     }
+
     return user.toObject() as User;
   }
 

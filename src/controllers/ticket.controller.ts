@@ -19,6 +19,12 @@ export class TicketController {
     return this.ticketService.getAllTickets({status, user});
   }
 
+  @Get('stats')
+  @UseGuards(AuthGuard('jwt'))
+  async getTicketStats(): Promise<{ [key: string]: number | { [key: string]: number } }> {
+    return this.ticketService.getTicketStats();
+  }
+
   @Get(':id')
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(200)
@@ -41,7 +47,7 @@ export class TicketController {
   }
 
   @Delete(':id')
-  async deleteTicket(@Param('id') id: string, isAdmin? : boolean): Promise<Ticket | { statusCode: number; message: string }> {
+  async deleteTicket(@Body('id') id: string, @Body('isAdmin') isAdmin? : boolean): Promise<Ticket | { statusCode: number; message: string }> {
     return this.ticketService.deleteTicket(id, isAdmin);
   }
 }

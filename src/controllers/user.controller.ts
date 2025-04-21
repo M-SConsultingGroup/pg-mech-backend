@@ -11,7 +11,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('create')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
   async createUser(@Body() createUserDto: Partial<User>): Promise<User> {
     return this.userService.createUser(createUserDto);
   }
@@ -22,10 +22,10 @@ export class UserController {
     return this.userService.getAllUsers();
   }
 
-  @Get('updatePassword')
-  @UseGuards(AuthGuard('jwt'), AdminGuard)
-  async updatePassword(@Body() newPassword: string): Promise<User> {
-    return this.userService.updatePassword(newPassword);
+  @Post('updatePassword')
+  @UseGuards(AuthGuard('jwt'))
+  async updatePassword(@Body() username: string, newPassword: string): Promise<User> {
+    return this.userService.updatePassword(username, newPassword);
   }
 
   @Post('login')
