@@ -71,23 +71,42 @@ export class UserService {
     }
   }
 
-  async createUser(data): Promise<User> {
+  async createUser(data: Partial<User>): Promise<User> {
+    // Check if the user already exists
+    const existingUser = await UserModel.findOne({ username: data.username }).exec();
+    if (existingUser) {
+        throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
+    }
+
     // Hash the password before saving
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const user = new UserModel({ ...data, password: hashedPassword });
     await user.save();
     return user.toObject() as User;
-  }
-
+}
   async updatePassword(username: string, password: string): Promise<User> {
-    // Hash the new password before saving
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await UserModel.findOneAndUpdate({ username: username }, { password: hashedPassword }, { new: true });
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.NO_CONTENT);
+    // Validate password input
+    if (!password || typeof password !== 'string') {
+      throw new HttpException('Password is required and must be a string', HttpStatus.BAD_REQUEST);
     }
 
-    return user.toObject() as User;
+    try {
+      // Hash the new password before saving
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = await UserModel.findOneAndUpdate(
+        { username: username },
+        { password: hashedPassword },
+        { new: true }
+      );
+
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      return user.toObject() as User;
+    } catch (error) {
+      throw new HttpException('Failed to update password', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async getUserById(id: string): Promise<User | null> {
@@ -100,4 +119,12 @@ export class UserService {
     users.map(user => user.toObject() as User);
     return users.filter(user => !user.isAdmin).map(user => user.username);
   }
+
+  async deleteUserByUsername(username: string): Promise<User | null> {
+    const user = await UserModel.findOneAndDelete({ username }).exec();
+    if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    return user.toObject() as User;
+}
 }
