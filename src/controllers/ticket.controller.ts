@@ -47,7 +47,7 @@ export class TicketController {
   }
 
   @Delete(':id')
-  async deleteTicket(@Body('id') id: string, @Body('isAdmin') isAdmin? : boolean): Promise<Ticket | { statusCode: number; message: string }> {
+  async deleteTicket(@Param('id') id: string, @Body('isAdmin') isAdmin? : boolean): Promise<Ticket | { statusCode: number; message: string }> {
     return this.ticketService.deleteTicket(id, isAdmin);
   }
 }
