@@ -4,15 +4,15 @@ import { TICKET_STATUSES } from '@/common/constants';
 
 const ticketSchema = new Schema<Ticket>(
   {
-    ticketNumber: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
+    ticketNumber: { type: String, required: true, unique: true, index: true },
+    name: { type: String, required: true, index: true },
     email: { type: String, required: true },
     phoneNumber: { type: String, required: true },
-    serviceAddress: { type: String, required: true },
+    serviceAddress: { type: String, required: true, index: true },
     workOrderDescription: { type: String, required: true },
     timeAvailability: { type: String, required: true },
-    status: { type: String, required: true, enum: TICKET_STATUSES, default: 'New' },
-    assignedTo: { type: String },
+    status: { type: String, required: true, enum: TICKET_STATUSES, default: 'New', index: true },
+    assignedTo: { type: String, index: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
     partsUsed: { type: [String], default: [] },
@@ -51,6 +51,8 @@ const ticketSchema = new Schema<Ticket>(
     },
   }
 );
+
+ticketSchema.index({ status: 1, assignedTo: 1 });
 
 const TicketModel = model<Ticket>('Ticket', ticketSchema);
 

@@ -10,7 +10,6 @@ export interface Ticket {
 	workOrderDescription: string;
 	timeAvailability: string;
 	status: string;
-	inProgress: boolean;
 	assignedTo?: string;
 	createdAt: Date;
 	updatedAt: Date;
