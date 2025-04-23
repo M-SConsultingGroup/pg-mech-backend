@@ -139,8 +139,19 @@ export class TicketService {
 		if (filters.user) {
 			query.assignedTo = filters.user;
 		}
-		const tickets = await TicketModel.find(query);
-		return tickets.map(ticket => ticket.toObject() as Ticket);
+
+		// Exclude large fields and use lean() for better performance
+		const tickets = await TicketModel.find(query)
+			.select('-images -additionalNotes -servicesDelivered -partsUsed')
+			.lean()
+			.exec();
+
+		return tickets.map(ticket => ({
+			id: ticket?._id.toString(),
+			...ticket,
+			_id: undefined,
+			__v: undefined
+		})) as Ticket[];
 	}
 
 	async deleteTicket(id: string, isAdmin?: boolean): Promise<Ticket | null> {
