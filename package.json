@@ -1,6 +1,6 @@
 {
   "name": "pg-mech-backend",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Backend for PG Mech",
   "author": "Mankirat Singh",
   "private": true,
@@ -37,7 +37,8 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "square": "^42.1.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
