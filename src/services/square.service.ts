@@ -13,7 +13,7 @@ export class SquareService {
 		try {
 			// Initialize Square client
 			const squareClient = new SquareClient({
-				environment: SquareEnvironment.Sandbox, // or Environment.Production
+				environment: SquareEnvironment.Production, // or Environment.Production
 				token: process.env.SQUARE_ACCESS_TOKEN,
 			});
 			this.squareClient = squareClient;
