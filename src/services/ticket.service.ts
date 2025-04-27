@@ -143,6 +143,7 @@ export class TicketService {
 		// Exclude large fields and use lean() for better performance
 		const tickets = await TicketModel.find(query)
 			.select('-images -additionalNotes -servicesDelivered -partsUsed')
+			.sort({ createdAt: -1 })
 			.lean()
 			.exec();
 
