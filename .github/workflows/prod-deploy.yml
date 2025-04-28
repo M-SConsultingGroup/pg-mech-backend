@@ -35,6 +35,8 @@ jobs:
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}
           MONGODB_URI=${{ secrets.MONGODB_URI }}
+          SQUARE_ACCESS_TOKEN=${{ secrets.SQUARE_ACCESS_TOKEN }}
+          SQUARE_LOCATION_ID=${{ secrets.SQUARE_LOCATION_ID }}
           EOF
 
           # Build the Docker image with build args
