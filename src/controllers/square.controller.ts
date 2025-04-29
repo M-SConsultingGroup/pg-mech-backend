@@ -22,13 +22,18 @@ export class SquareController {
 			throw new HttpException('Failed to create or find order', HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		const invoiceResponse = await this.squareService.createInvoice(orderId, customerId, ticket, payment)
+		const {invoice , errors} = await this.squareService.createInvoice(orderId, customerId, ticket, payment)
+
+		if(errors) {
+			throw new HttpException(errors, HttpStatus.INTERNAL_SERVER_ERROR)
+		}
 
 		// Return the draft invoice details without publishing
 		return {
 			message: 'Invoice saved as draft successfully',
-			invoiceUrl: invoiceResponse.invoice?.publicUrl,
-			invoiceId: invoiceResponse.invoice?.id
+			invoiceUrl: invoice?.publicUrl,
+			invoiceId: invoice?.id,
+			invoiceNumber: invoice?.invoiceNumber
 		}
 	}
 }

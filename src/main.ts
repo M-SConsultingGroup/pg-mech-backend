@@ -1,4 +1,3 @@
-// src/main.ts
 import * as dotenv from 'dotenv';
 import { NestFactory } from '@nestjs/core';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
@@ -12,7 +11,6 @@ async function bootstrap() {
   await connectToDatabase();
   const app = await NestFactory.create(AppModule, { cors: false });
 
-  // Apply global validation pipe
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
     forbidNonWhitelisted: true,
@@ -22,7 +20,7 @@ async function bootstrap() {
   }));
 
   app.setGlobalPrefix('api');
-  app.use(json({ limit: '50mb' }));  
+  app.use(json({ limit: '50mb' }));
   await app.listen(4000);
 }
 bootstrap();

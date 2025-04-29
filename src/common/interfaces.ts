@@ -1,5 +1,3 @@
-// src/common/interfaces.ts
-
 export interface Ticket {
 	id: string;
 	ticketNumber: string;
@@ -10,9 +8,11 @@ export interface Ticket {
 	workOrderDescription: string;
 	timeAvailability: string;
 	status: string;
-	assignedTo?: string;
 	createdAt: Date;
 	updatedAt: Date;
+	assignedTo?: string;
+	poNumber?: string;
+	invoiceNumber?: string;
 	partsUsed?: string[];
 	servicesDelivered?: string;
 	additionalNotes?: string;
