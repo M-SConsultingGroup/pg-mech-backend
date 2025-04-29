@@ -15,6 +15,7 @@ const ticketSchema = new Schema<Ticket>(
     assignedTo: { type: String, index: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
+    invoiceNumber: { type: String, default: '' },
     partsUsed: { type: [String], default: [] },
     servicesDelivered: { type: String, default: '' },
     additionalNotes: { type: String, default: '' },
@@ -28,7 +29,6 @@ const ticketSchema = new Schema<Ticket>(
     toObject: {
       virtuals: true,
       transform: (doc, ret) => {
-        // Create a new object with `id` at the top
         return {
           id: ret._id, // Map _id to id
           ...ret,
@@ -40,7 +40,6 @@ const ticketSchema = new Schema<Ticket>(
     toJSON: {
       virtuals: true,
       transform: (doc, ret) => {
-        // Create a new object with `id` at the top
         return {
           id: ret._id, // Map _id to id
           ...ret,
