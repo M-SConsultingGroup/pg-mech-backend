@@ -19,6 +19,7 @@ async function bootstrap() {
     },
   }));
 
+  app.enableCors({});
   app.setGlobalPrefix('api');
   app.use(json({ limit: '50mb' }));
   await app.listen(4000);

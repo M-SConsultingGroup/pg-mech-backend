@@ -1,4 +1,3 @@
-// src/dto/login.dto.ts
 import { IsString, IsNotEmpty } from 'class-validator';
 import { User } from "@/common/interfaces";
 import { APIResponse } from "./api.response";

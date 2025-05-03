@@ -1,4 +1,3 @@
-// src/controllers/user.controller.ts
 import { Controller, Get, Post, Body, Param, UseGuards, HttpCode, Delete } from '@nestjs/common';
 import { UserService } from '@/services/user.service';
 import { User } from '@/common/interfaces';
