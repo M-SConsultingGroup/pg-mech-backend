@@ -1,4 +1,3 @@
-// src/services/user.service.ts
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import UserModel from '@/models/schema/user';

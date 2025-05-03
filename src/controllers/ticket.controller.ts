@@ -1,4 +1,3 @@
-// src/controllers/ticket.controller.ts
 import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, HttpCode } from '@nestjs/common';
 import { TicketService } from '@/services/ticket.service';
 import { Ticket } from '@/common/interfaces';

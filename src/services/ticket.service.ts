@@ -1,4 +1,3 @@
-// src/services/ticket.service.ts
 import TicketModel from '@/models/schema/ticket';
 import Sequence from '@/models/schema/sequence';
 import { Ticket } from '@/common/interfaces';
