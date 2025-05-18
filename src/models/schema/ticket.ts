@@ -1,4 +1,4 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { Ticket } from '@/common/interfaces';
 import { TICKET_STATUSES } from '@/common/constants';
 
@@ -15,6 +15,10 @@ const ticketSchema = new Schema<Ticket>(
     assignedTo: { type: String, index: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
+    coordinates: {
+      latitude: { type: Number, default: 0 }, 
+      longitude: { type: Number, default: 0 },
+    },
     invoiceNumber: { type: String, default: '' },
     partsUsed: { type: [String], default: [] },
     servicesDelivered: { type: String, default: '' },

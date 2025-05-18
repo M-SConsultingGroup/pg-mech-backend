@@ -12,6 +12,10 @@ export interface Ticket {
 	updatedAt: Date;
 	assignedTo?: string;
 	poNumber?: string;
+	coordinates?: {
+		latitude: number;
+		longitude: number;
+	};
 	invoiceNumber?: string;
 	partsUsed?: string[];
 	servicesDelivered?: string;
@@ -59,8 +63,8 @@ export interface UserHours {
 export type Priority = 'Highest' | 'High' | 'Medium' | 'Low' | 'Lowest' | '';
 
 export interface LineItem {
-	name: string; 
-	quantity: number; 
+	name: string;
+	quantity: number;
 	price: number;
 	notes: string;
 }
