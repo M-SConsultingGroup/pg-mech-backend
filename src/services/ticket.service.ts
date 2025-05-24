@@ -6,10 +6,24 @@ import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nes
 
 @Injectable()
 export class TicketService {
+
+	private async updateCoordidates(ticketNumber: string, serviceAddress: string): Promise<void> {
+		const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(serviceAddress)}&key=${process.env.GOOGLE_API_KEY}`);
+		const data = await res.json();
+
+		if (data.status !== 'OK' || data.results.length === 0) {
+			return;
+		}
+
+		const location = data.results[0].geometry.location;
+		await TicketModel.findOneAndUpdate({ticketNumber}, { coordinates: { latitude: location.lat, longitude: location.lng } }, { new: true, runValidators: true });
+	}
+
 	async createTicket(data): Promise<Ticket> {
 		const ticketNumber = await this.generateTicketNumber();
 		const ticket = new TicketModel({ ...data, ticketNumber });
 		await ticket.save();
+		this.updateCoordidates(ticketNumber, data.serviceAddress);
 		return ticket.toObject() as Ticket;
 	}
 
