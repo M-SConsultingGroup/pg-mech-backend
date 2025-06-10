@@ -32,6 +32,7 @@ jobs:
 
           # Create/update .env file
           cat <<EOF > .env
+          GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}
           MONGODB_URI=${{ secrets.MONGODB_URI }}
