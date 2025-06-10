@@ -50,7 +50,7 @@ export class SquareService {
 					buyNowPayLater: false
 				},
 				title: 'Service Invoice',
-				description: ticket.additionalNotes,
+				description: ticket.servicesDelivered,
 				orderId,
 			},
 			idempotencyKey: `invoice_${ticket.ticketNumber}_${Date.now()}`
