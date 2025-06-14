@@ -49,8 +49,8 @@ export class SquareService {
 					bankAccount: payment.bankAccount,
 					buyNowPayLater: false
 				},
-				title: 'Service Invoice',
-				description: ticket.servicesDelivered,
+				title: ticket.ticketNumber,
+				description: 'We appreciate your business!',
 				orderId,
 			},
 			idempotencyKey: `invoice_${ticket.ticketNumber}_${Date.now()}`
