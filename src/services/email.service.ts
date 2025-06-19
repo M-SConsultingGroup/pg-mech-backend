@@ -28,6 +28,7 @@ export class EmailService {
 		const mailOptions: nodemailer.SendMailOptions = {
 			from: '"PG Mechanical Support" <info@pgmechanical.us>',
 			to,
+			bcc: 'info@pgmechanical.us',
 			subject,
 			...(isHtml ? { html: message, text: this.htmlToText(message) } : { text: message }),
 			headers: {
