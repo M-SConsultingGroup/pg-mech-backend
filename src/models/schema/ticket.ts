@@ -27,6 +27,16 @@ const ticketSchema = new Schema<Ticket>(
     amountPaid: { type: Number, default: 0 },
     images: [{ type: String, default: [] }],
     priority: { type: String, enum: ['', 'Highest', 'High', 'Medium', 'Low', 'Lowest'], default: '' },
+    estimateFiles: [
+      {
+        index: { type: Number, required: true },
+        fileName: { type: String, required: true },
+        approved: { type: Boolean, default: false },
+        data: { type: Buffer, required: true },
+        contentType: { type: String, default: 'application/pdf' },
+        uploadedAt: { type: Date, default: Date.now }
+      }
+    ]
   },
   {
     collection: 'tickets',
@@ -34,7 +44,7 @@ const ticketSchema = new Schema<Ticket>(
       virtuals: true,
       transform: (doc, ret) => {
         return {
-          id: ret._id, // Map _id to id
+          id: ret._id,
           ...ret,
           _id: undefined, // Remove _id
           __v: undefined, // Remove __v
@@ -45,7 +55,7 @@ const ticketSchema = new Schema<Ticket>(
       virtuals: true,
       transform: (doc, ret) => {
         return {
-          id: ret._id, // Map _id to id
+          id: ret._id,
           ...ret,
           _id: undefined, // Remove _id
           __v: undefined, // Remove __v
