@@ -3,6 +3,7 @@ import Sequence from '@/models/schema/sequence';
 import { EstimateFile, Ticket } from '@/common/interfaces';
 import * as moment from 'moment-timezone';
 import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { TICKET_STATUSES } from '@/common/constants';
 
 @Injectable()
 export class TicketService {
@@ -52,7 +53,7 @@ export class TicketService {
 					statusStats: [
 						{
 							$match: {
-								status: { $in: ['New', 'Open', 'Need Estimate', 'Estimate Sent', 'Estimate Approved'] }
+								status: { $in: TICKET_STATUSES }
 							}
 						},
 						{
