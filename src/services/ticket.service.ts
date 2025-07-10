@@ -45,7 +45,7 @@ export class TicketService {
 		return ticket ? (ticket.toObject() as Ticket) : null;
 	}
 
-	async getTicketStats(): Promise<{ total: number; new: number; open: number; [user: string]: number | { total: number; new: number; open: number } }> {
+	async getTicketStats(): Promise<{ total: number; new: number; open: number;[user: string]: number | { total: number; new: number; open: number } }> {
 		const stats = await TicketModel.aggregate([
 			{
 				$facet: {
@@ -182,15 +182,23 @@ export class TicketService {
 	}
 
 	async getEstimateFiles(id: string): Promise<EstimateFile[]> {
-		const ticket = await TicketModel.findById(id).select('estimateFiles').lean().exec();
+		const ticket = await TicketModel.findById(id).select('estimateFiles').exec();
 		if (!ticket) {
 			throw new HttpException('Ticket not found', HttpStatus.NO_CONTENT);
 		}
 		return ticket.estimateFiles || [];
 	}
 
-	async addEstimateFile(id: string, estimateFile: EstimateFile): Promise<void> {
-		return null;
+	async addEstimateFile(id: string, file): Promise<void> {
+		const estimateFile: EstimateFile = {
+			index: file.index,
+			fileName: file.fileName,
+			approved: 'Pending',
+			data: file.data,
+			contentType: 'application/pdf',
+			uploadedAt: new Date(),
+		}
+		await TicketModel.findByIdAndUpdate(id, { $push: { estimateFiles: estimateFile } }, { new: true, runValidators: true })
 	}
 
 	private async generateTicketNumber(): Promise<string> {

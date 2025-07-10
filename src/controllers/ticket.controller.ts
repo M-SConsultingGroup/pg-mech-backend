@@ -45,12 +45,12 @@ export class TicketController {
     return this.ticketService.updateTicket(id, { timeAvailability });
   }
 
-  @Post('estimates/:id')
-  async addEstimateFile(@Param('id') id: string, @Body() estimateFile: EstimateFile): Promise<void> {
-    return this.ticketService.addEstimateFile(id, estimateFile);
+  @Post(':id/estimates')
+  async addEstimateFile(@Param('id') id: string, @Body() file): Promise<void> {
+    return this.ticketService.addEstimateFile(id, file);
   }
 
-  @Get('estimates/:id')
+  @Get(':id/estimates')
   async getEstimateFiles(@Param('id') id: string): Promise<EstimateFile[]> {
     return this.ticketService.getEstimateFiles(id);
   }

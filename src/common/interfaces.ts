@@ -30,10 +30,10 @@ export interface Ticket {
 }
 
 export interface EstimateFile {
-	index?: number;
-	fileName?: string;
-	approved: boolean;
+	index: number;
+	fileName: string;
 	data: Buffer | Binary;
+	approved?: 'Approved' | 'Denied' | 'Pending';
 	contentType: string;
 	uploadedAt: Date;
 }

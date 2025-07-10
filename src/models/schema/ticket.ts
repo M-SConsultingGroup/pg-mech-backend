@@ -16,7 +16,7 @@ const ticketSchema = new Schema<Ticket>(
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
     coordinates: {
-      latitude: { type: Number, default: 0 }, 
+      latitude: { type: Number, default: 0 },
       longitude: { type: Number, default: 0 },
     },
     invoiceNumber: { type: String, default: '' },
@@ -31,7 +31,7 @@ const ticketSchema = new Schema<Ticket>(
       {
         index: { type: Number, required: true },
         fileName: { type: String, required: true },
-        approved: { type: Boolean, default: false },
+        approved: { type: String, required: true },
         data: { type: Buffer, required: true },
         contentType: { type: String, default: 'application/pdf' },
         uploadedAt: { type: Date, default: Date.now }
