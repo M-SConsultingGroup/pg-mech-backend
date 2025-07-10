@@ -1,3 +1,5 @@
+import { Binary } from 'bson';
+
 export interface Ticket {
 	id: string;
 	ticketNumber: string;
@@ -24,6 +26,16 @@ export interface Ticket {
 	amountPaid?: number;
 	images?: { type: string, default: [] }[];
 	priority?: Priority;
+	estimateFiles?: EstimateFile[];
+}
+
+export interface EstimateFile {
+	index: number;
+	fileName: string;
+	data: Buffer | Binary;
+	approved?: 'Approved' | 'Denied' | 'Pending';
+	contentType: string;
+	uploadedAt: Date;
 }
 
 export interface Parts {

@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, HttpCode } from '@nestjs/common';
 import { TicketService } from '@/services/ticket.service';
-import { Ticket } from '@/common/interfaces';
+import { EstimateFile, Ticket } from '@/common/interfaces';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('tickets')
@@ -43,6 +43,16 @@ export class TicketController {
   async updateTimeTicket(@Param('id') id: string, @Body() updateTicketDto: Partial<Ticket>): Promise<Ticket | { statusCode: number; message: string }> {
     const { timeAvailability } = updateTicketDto;
     return this.ticketService.updateTicket(id, { timeAvailability });
+  }
+
+  @Post(':id/estimates')
+  async addEstimateFile(@Param('id') id: string, @Body() file): Promise<void> {
+    return this.ticketService.addEstimateFile(id, file);
+  }
+
+  @Get(':id/estimates')
+  async getEstimateFiles(@Param('id') id: string): Promise<EstimateFile[]> {
+    return this.ticketService.getEstimateFiles(id);
   }
 
   @Delete(':id')

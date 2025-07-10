@@ -1,6 +1,6 @@
 import TicketModel from '@/models/schema/ticket';
 import Sequence from '@/models/schema/sequence';
-import { Ticket } from '@/common/interfaces';
+import { EstimateFile, Ticket } from '@/common/interfaces';
 import * as moment from 'moment-timezone';
 import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
@@ -16,7 +16,7 @@ export class TicketService {
 		}
 
 		const location = data.results[0].geometry.location;
-		await TicketModel.findOneAndUpdate({ticketNumber}, { coordinates: { latitude: location.lat, longitude: location.lng } }, { new: true, runValidators: true });
+		await TicketModel.findOneAndUpdate({ ticketNumber }, { coordinates: { latitude: location.lat, longitude: location.lng } }, { new: true, runValidators: true });
 	}
 
 	async createTicket(data): Promise<Ticket> {
@@ -45,20 +45,14 @@ export class TicketService {
 		return ticket ? (ticket.toObject() as Ticket) : null;
 	}
 
-	async getTicketStats(): Promise<{
-		total: number;
-		new: number;
-		open: number;
-		[user: string]: number | { total: number; new: number; open: number };
-	}> {
+	async getTicketStats(): Promise<{ total: number; new: number; open: number;[user: string]: number | { total: number; new: number; open: number } }> {
 		const stats = await TicketModel.aggregate([
 			{
 				$facet: {
-					// Get overall new and open counts
 					statusStats: [
 						{
 							$match: {
-								status: { $in: ['New', 'Open'] }
+								status: { $in: ['New', 'Open', 'Need Estimate', 'Estimate Sent', 'Estimate Approved'] }
 							}
 						},
 						{
@@ -68,7 +62,6 @@ export class TicketService {
 							},
 						},
 					],
-					// Get only assigned users' stats
 					userStats: [
 						{
 							$match: {
@@ -85,7 +78,6 @@ export class TicketService {
 							},
 						},
 					],
-					// Get total count (including unassigned)
 					total: [
 						{
 							$group: {
@@ -107,18 +99,14 @@ export class TicketService {
 
 		if (stats.length > 0) {
 			const [data] = stats;
-
-			// Set total count
 			result.total = data.total[0]?.count || 0;
 
-			// Set status counts
 			data.statusStats.forEach((stat) => {
 				if (stat._id === 'New') result.new = stat.count;
 				if (stat._id === 'Open') result.open = stat.count;
 			});
 
-			// Process user stats
-			const userData = new Map<string, { total: number; new: number; open: number }>();
+			const userData = new Map<string, { total: number; new: number; open: number; needEstimate: number; estimateSent: number; estimateApproved: number }>();
 
 			data.userStats.forEach((stat) => {
 				const user = stat._id.user;
@@ -126,16 +114,18 @@ export class TicketService {
 				const count = stat.count;
 
 				if (!userData.has(user)) {
-					userData.set(user, { total: 0, new: 0, open: 0 });
+					userData.set(user, { total: 0, new: 0, open: 0, needEstimate: 0, estimateSent: 0, estimateApproved: 0 });
 				}
 
 				const userStats = userData.get(user)!;
 				userStats.total += count;
 				if (status === 'New') userStats.new += count;
 				if (status === 'Open') userStats.open += count;
+				if (status === 'Need Estimate') userStats.needEstimate += count;
+				if (status === 'Estimate Sent') userStats.estimateSent += count;
+				if (status === 'Estimate Approved') userStats.estimateApproved += count;
 			});
 
-			// Add user stats to result
 			userData.forEach((stats, user) => {
 				result[user] = stats;
 			});
@@ -144,7 +134,7 @@ export class TicketService {
 		return result;
 	}
 
-	async getAllTickets(filters: { status?: string; user?: string }): Promise<Ticket[]> {
+	async getAllTickets(filters: { status?: string; user?: string }): Promise<Partial<Ticket[]>> {
 		const query: any = {};
 		if (filters.status) {
 			query.status = filters.status;
@@ -153,9 +143,8 @@ export class TicketService {
 			query.assignedTo = filters.user;
 		}
 
-		// Exclude large fields and use lean() for better performance
 		const tickets = await TicketModel.find(query)
-			.select('-images -additionalNotes -servicesDelivered -partsUsed')
+			.select('-images -additionalNotes -servicesDelivered -partsUsed -estimateFiles -invoiceNumber -amountBilled -amountPaid')
 			.sort({ createdAt: -1 })
 			.lean()
 			.exec();
@@ -190,6 +179,26 @@ export class TicketService {
 		ticket.timeAvailability = timeAvailability;
 		await TicketModel.findByIdAndUpdate(id, ticket, { new: true });
 		return ticket;
+	}
+
+	async getEstimateFiles(id: string): Promise<EstimateFile[]> {
+		const ticket = await TicketModel.findById(id).select('estimateFiles').exec();
+		if (!ticket) {
+			throw new HttpException('Ticket not found', HttpStatus.NO_CONTENT);
+		}
+		return ticket.estimateFiles || [];
+	}
+
+	async addEstimateFile(id: string, file): Promise<void> {
+		const estimateFile: EstimateFile = {
+			index: file.index,
+			fileName: file.fileName,
+			approved: 'Pending',
+			data: file.data,
+			contentType: 'application/pdf',
+			uploadedAt: new Date(),
+		}
+		await TicketModel.findByIdAndUpdate(id, { $push: { estimateFiles: estimateFile } }, { new: true, runValidators: true })
 	}
 
 	private async generateTicketNumber(): Promise<string> {
