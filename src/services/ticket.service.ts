@@ -1,12 +1,14 @@
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import * as moment from 'moment-timezone';
 import TicketModel from '@/models/schema/ticket';
 import Sequence from '@/models/schema/sequence';
 import { EstimateFile, Ticket } from '@/common/interfaces';
-import * as moment from 'moment-timezone';
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { TICKET_STATUSES } from '@/common/constants';
+import { EmailService } from './email.service';
 
 @Injectable()
 export class TicketService {
+	constructor(private readonly emailService: EmailService) { }
 
 	private async updateCoordidates(ticketNumber: string, serviceAddress: string): Promise<void> {
 		const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(serviceAddress)}&key=${process.env.GOOGLE_API_KEY}`);
@@ -182,6 +184,27 @@ export class TicketService {
 			uploadedAt: new Date(),
 		}
 		await TicketModel.findByIdAndUpdate(id, { $push: { estimateFiles: estimateFile } }, { new: true, runValidators: true })
+	}
+
+	async emailEstimates(ticketId: string, body: { subject: string; message: string }): Promise<any> {
+		const ticket = await TicketModel.findById(ticketId).exec();
+		if (!ticket || !ticket.estimateFiles?.length) {
+			throw new HttpException('No estimates found for this ticket.', HttpStatus.NOT_FOUND);
+		}
+
+		const attachments = ticket.estimateFiles.map((file) => ({
+			filename: file.fileName || 'estimate.pdf',
+			content: Buffer.isBuffer(file.data) ? file.data : Buffer.from((file.data as any).buffer || (file.data as any).data),
+			contentType: file.contentType,
+		}));
+
+		return this.emailService.sendEmail({
+			to: ticket.email,
+			subject: body.subject,
+			message: body.message,
+			isHtml: true,
+			attachments,
+		});
 	}
 
 	private async generateTicketNumber(): Promise<string> {

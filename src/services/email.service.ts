@@ -18,19 +18,26 @@ export class EmailService {
 			user: 'info@pgmechanical.us',
 			pass: process.env.EMAIL_PASSWORD,
 		},
-		pool: true, // Use connection pooling
+		pool: true,
 		maxConnections: 5,
-		rateDelta: 1000, // Rate limit to 1 email per second
+		rateDelta: 1000,
 		rateLimit: 5,
 	});
 
-	async sendEmail({ to, subject, message, isHtml = false }: EmailOptions): Promise<any> {
+	async sendEmail({
+		to,
+		subject,
+		message,
+		isHtml = false,
+		attachments = [],
+	}: EmailOptions & { attachments?: nodemailer.Attachment[] }): Promise<any> {
 		const mailOptions: nodemailer.SendMailOptions = {
 			from: '"PG Mechanical Support" <info@pgmechanical.us>',
 			to,
 			bcc: 'info@pgmechanical.us',
 			subject,
 			...(isHtml ? { html: message, text: this.htmlToText(message) } : { text: message }),
+			attachments,
 			headers: {
 				'X-Mailer': 'PG Mechanical Support System',
 				'X-Priority': '1',
@@ -38,10 +45,8 @@ export class EmailService {
 		};
 
 		try {
-			// Verify connection first
 			await this.transporter.verify();
 			const info = await this.transporter.sendMail(mailOptions);
-
 			return {
 				success: true,
 				messageId: info.messageId,

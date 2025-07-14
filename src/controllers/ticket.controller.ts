@@ -15,7 +15,7 @@ export class TicketController {
   @Get('all')
   @UseGuards(AuthGuard('jwt'))
   async getTickets(@Query('status') status?: string, @Query('user') user?: string): Promise<Ticket[]> {
-    return this.ticketService.getAllTickets({status, user});
+    return this.ticketService.getAllTickets({ status, user });
   }
 
   @Get('stats')
@@ -55,8 +55,14 @@ export class TicketController {
     return this.ticketService.getEstimateFiles(id);
   }
 
+  @Post(':id/email-estimates')
+  async emailEstimates(@Param('id') ticketId: string, @Body() body: { subject: string; message: string }) {
+    return this.ticketService.emailEstimates(ticketId, body);
+  }
+
+
   @Delete(':id')
-  async deleteTicket(@Param('id') id: string, @Body('isAdmin') isAdmin? : boolean): Promise<Ticket | { statusCode: number; message: string }> {
+  async deleteTicket(@Param('id') id: string, @Body('isAdmin') isAdmin?: boolean): Promise<Ticket | { statusCode: number; message: string }> {
     return this.ticketService.deleteTicket(id, isAdmin);
   }
 }
