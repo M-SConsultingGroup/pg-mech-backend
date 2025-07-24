@@ -192,6 +192,8 @@ export class TicketService {
 			throw new HttpException('No estimates found for this ticket.', HttpStatus.NOT_FOUND);
 		}
 
+		TicketModel.findByIdAndUpdate(ticketId, { status: 'Estimates Sent' }, { new: true, runValidators: true });
+
 		const attachments = ticket.estimateFiles.map((file) => ({
 			filename: file.fileName || 'estimate.pdf',
 			content: Buffer.isBuffer(file.data) ? file.data : Buffer.from((file.data as any).buffer || (file.data as any).data),

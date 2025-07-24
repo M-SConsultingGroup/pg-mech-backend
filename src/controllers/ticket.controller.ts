@@ -46,6 +46,7 @@ export class TicketController {
   }
 
   @Post(':id/estimates')
+  @UseGuards(AuthGuard('jwt'))
   async addEstimateFile(@Param('id') id: string, @Body() file): Promise<void> {
     return this.ticketService.addEstimateFile(id, file);
   }
@@ -56,10 +57,10 @@ export class TicketController {
   }
 
   @Post(':id/email-estimates')
+  @UseGuards(AuthGuard('jwt'))
   async emailEstimates(@Param('id') ticketId: string, @Body() body: { subject: string; message: string }) {
     return this.ticketService.emailEstimates(ticketId, body);
   }
-
 
   @Delete(':id')
   async deleteTicket(@Param('id') id: string, @Body('isAdmin') isAdmin?: boolean): Promise<Ticket | { statusCode: number; message: string }> {
