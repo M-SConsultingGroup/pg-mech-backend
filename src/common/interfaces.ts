@@ -32,7 +32,7 @@ export interface Ticket {
 export interface EstimateFile {
 	index: number;
 	fileName: string;
-	data: Buffer | Binary;
+	data: Buffer;
 	approved?: 'Approved' | 'Denied' | 'Pending';
 	contentType: string;
 	uploadedAt: Date;

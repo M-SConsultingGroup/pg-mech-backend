@@ -139,7 +139,7 @@ export class TicketService {
 			...ticket,
 			_id: undefined,
 			__v: undefined
-		})) as Ticket[];
+		})) as Omit<Ticket, 'estimateFiles'>[];
 	}
 
 	async deleteTicket(id: string, isAdmin?: boolean): Promise<Ticket | null> {
@@ -175,15 +175,33 @@ export class TicketService {
 	}
 
 	async addEstimateFile(id: string, file): Promise<void> {
+		let bufferData: Buffer;
+
+		if (Buffer.isBuffer(file.data)) {
+			bufferData = file.data;
+		} else if (typeof file.data === 'string') {
+			// It's base64 text
+			bufferData = Buffer.from(file.data, 'base64');
+		} else if (file.data?.type === 'Buffer' && Array.isArray(file.data.data)) {
+			bufferData = Buffer.from(file.data.data);
+		} else {
+			throw new Error('Unsupported file data format');
+		}
+
 		const estimateFile: EstimateFile = {
 			index: file.index,
 			fileName: file.fileName,
 			approved: 'Pending',
-			data: file.data,
+			data: bufferData,
 			contentType: 'application/pdf',
 			uploadedAt: new Date(),
-		}
-		await TicketModel.findByIdAndUpdate(id, { $push: { estimateFiles: estimateFile } }, { new: true, runValidators: true })
+		};
+
+		await TicketModel.findByIdAndUpdate(
+			id,
+			{ $push: { estimateFiles: estimateFile } },
+			{ new: true, runValidators: true }
+		);
 	}
 
 	async emailEstimates(ticketId: string, body: { subject: string; message: string }): Promise<any> {
