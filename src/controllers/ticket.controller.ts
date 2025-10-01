@@ -66,4 +66,10 @@ export class TicketController {
   async deleteTicket(@Param('id') id: string, @Body('isAdmin') isAdmin?: boolean): Promise<Ticket | { statusCode: number; message: string }> {
     return this.ticketService.deleteTicket(id, isAdmin);
   }
+
+  @Get('/sequence/all')
+  @UseGuards(AuthGuard('jwt'))
+  async getAllTicketNumbers(): Promise<{ date: string; count: number }[]> {
+    return this.ticketService.getAllTicketNumbers();
+  }
 }

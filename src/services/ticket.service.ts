@@ -227,6 +227,11 @@ export class TicketService {
 		});
 	}
 
+	async getAllTicketNumbers(): Promise<{ date: string; count: number }[]> {
+		const ticketPerDate = await Sequence.find().lean().exec();
+		return ticketPerDate.map(doc => ({ date: doc.date, count: doc.sequence }));
+	}
+
 	private async generateTicketNumber(): Promise<string> {
 		const date = moment().tz('America/Chicago');
 		const currentDate = date.format('YYYY-MM-DD');
