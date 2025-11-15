@@ -65,7 +65,7 @@ const ticketSchema = new Schema<Ticket>(
   }
 );
 
-ticketSchema.index({ status: 1, assignedTo: 1 });
+ticketSchema.index({ assignedTo: 1, status: 1 });
 ticketSchema.index({ createdAt: -1 });
 
 const TicketModel = model<Ticket>('Ticket', ticketSchema);
