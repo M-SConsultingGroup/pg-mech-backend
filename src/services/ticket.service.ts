@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import moment from 'moment-timezone';
+import * as moment from 'moment-timezone';
 import TicketModel from '@/models/schema/ticket';
 import Sequence from '@/models/schema/sequence';
 import { EstimateFile, Ticket } from '@/common/interfaces';
@@ -53,12 +53,14 @@ export class TicketService {
 			{
 				$facet: {
 					statusStats: [
+						{ $match: { status: { $in: TICKET_STATUSES } } },
 						{ $group: { _id: '$status', count: { $sum: 1 } } }
 					],
 					userStats: [
 						{
 							$match: {
-								assignedTo: { $exists: true, $nin: [null, '', 'Unassigned'] }
+								assignedTo: { $exists: true, $nin: [null, '', 'Unassigned'] },
+								status: { $in: TICKET_STATUSES },
 							},
 						},
 						{
@@ -74,7 +76,7 @@ export class TicketService {
 					total: [{ $group: { _id: null, count: { $sum: 1 } } }],
 				},
 			},
-		]).exec();
+		]);
 
 		const result: {
 			total: number;
