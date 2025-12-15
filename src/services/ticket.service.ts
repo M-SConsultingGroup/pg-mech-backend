@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import moment from 'moment-timezone';
+import * as moment from 'moment-timezone';
 import TicketModel from '@/models/schema/ticket';
 import Sequence from '@/models/schema/sequence';
 import { EstimateFile, Ticket } from '@/common/interfaces';
@@ -48,9 +48,7 @@ export class TicketService {
 		return ticket ? (ticket.toObject() as Ticket) : null;
 	}
 
-	async getTicketStats() {
-		console.time('aggregation');
-
+	async getTicketStats(): Promise<{ total: number;[status: string]: number | { [status: string]: number; total: number } }> {
 		const pipeline = [
 			{ $match: { assignedTo: { $ne: null } } },
 
