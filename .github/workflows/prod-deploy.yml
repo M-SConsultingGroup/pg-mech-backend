@@ -47,7 +47,7 @@ jobs:
             sudo docker run -d \
               --network=pg-mech-network \
               --name pg-mech-backend \
-              --port 3000:3000 \
+              -p 3000:3000 \
               --env-file .env \
               --restart unless-stopped \
               pg-mech-backend:latest
