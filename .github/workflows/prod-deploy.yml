@@ -36,12 +36,8 @@ jobs:
 
             # Build Docker image
             sudo docker build --pull -t pg-mech-backend:latest .
-
-            # Stop existing container if running
-            if sudo docker ps -q --filter "name=pg-mech-backend" | grep -q .; then
-              sudo docker stop pg-mech-backend
-              sudo docker rm pg-mech-backend
-            fi
+            sudo docker stop pg-mech-backend
+            sudo docker rm pg-mech-backend
 
             # Run container internally on Docker network (do not expose publicly)
             sudo docker run -d \
