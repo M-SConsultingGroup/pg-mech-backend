@@ -24,13 +24,8 @@ export class EmailService {
 		rateLimit: 5,
 	});
 
-	async sendEmail({
-		to,
-		subject,
-		message,
-		isHtml = false,
-		attachments = [],
-	}: EmailOptions & { attachments?: nodemailer.Attachment[] }): Promise<any> {
+	async sendEmail({ to, subject, message, isHtml = false, attachments = [] }
+		: EmailOptions & { attachments?: nodemailer.Attachment[] }): Promise<any> {
 		const mailOptions: nodemailer.SendMailOptions = {
 			from: '"PG Mechanical Support" <info@pgmechanical.us>',
 			to,
@@ -54,7 +49,16 @@ export class EmailService {
 				rejected: info.rejected
 			};
 		} catch (error) {
-			throw new HttpException(`Failed to send email: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+			// Log full error
+			console.error('Email sending failed:', error);
+			throw new HttpException(
+				{
+					message: `Failed to send email: ${error.message}`,
+					code: (error as any).code || 'UNKNOWN',
+					response: (error as any).response,
+				},
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
 		}
 	}
 
