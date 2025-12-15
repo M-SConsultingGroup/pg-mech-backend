@@ -43,7 +43,7 @@ jobs:
             sudo docker run -d \
               --network=pg-mech-network \
               --name pg-mech-backend \
-              -p 3000:3000 \
+              -p 4000:4000 \
               --env-file .env \
               --restart unless-stopped \
               pg-mech-backend:latest
