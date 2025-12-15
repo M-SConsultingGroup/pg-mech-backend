@@ -10,43 +10,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Set up SSH Key
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Deploy to VPS via SSH
-      uses: appleboy/ssh-action@v0.1.5
-      with:
-        host: ${{ secrets.VPS_IP }}
-        username: root
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: 22
-        script: |
-          cd ~/pg-mech-backend
+      - name: Set up SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
 
-          # Pull the latest changes
-          git pull origin main
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: admin
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd ~/pg-mech-backend
 
-          # Create/update .env file
-          cat <<EOF > .env
-          GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}
-          MONGODB_URI=${{ secrets.MONGODB_URI }}
-          SQUARE_ACCESS_TOKEN=${{ secrets.SQUARE_ACCESS_TOKEN }}
-          SQUARE_LOCATION_ID=${{ secrets.SQUARE_LOCATION_ID }}
-          EOF
+            # Pull latest changes
+            git fetch --all
+            git reset --hard origin/main
 
-          # Build the Docker image with build args
-          sudo docker build -t pg-mech-backend:latest .
+            # Build Docker image
+            sudo docker build --pull -t pg-mech-backend:latest .
 
-          # Stop and remove any existing container
-          sudo docker stop pg-mech-backend || true
-          sudo docker rm pg-mech-backend || true
-          sudo docker container prune || true
+            # Stop existing container if running
+            if sudo docker ps -q --filter "name=pg-mech-backend" | grep -q .; then
+              sudo docker stop pg-mech-backend
+              sudo docker rm pg-mech-backend
+            fi
 
-          # Run the new container
-          sudo docker run -d --network=pg-mech-network --name pg-mech-backend --env-file .env -p 4000:4000 pg-mech-backend:latest
+            # Run container internally on Docker network (do not expose publicly)
+            sudo docker run -d \
+              --network=pg-mech-network \
+              --name pg-mech-backend \
+              --port 3000:3000 \
+              --env-file .env \
+              --restart unless-stopped \
+              pg-mech-backend:latest
