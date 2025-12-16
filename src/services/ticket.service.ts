@@ -50,15 +50,13 @@ export class TicketService {
 
 	async getTicketStats(): Promise<{ total: number;[status: string]: number | { [status: string]: number; total: number } }> {
 		const pipeline = [
-			{ $match: { assignedTo: { $ne: null } } },
+			{ $match: { status: { $ne: null } } },
 
 			{
 				$group: {
 					_id: null,
 					total: { $sum: 1 },
-					New: { $sum: { $cond: [{ $eq: ['$status', 'New'] }, 1, 0] } },
-					Open: { $sum: { $cond: [{ $eq: ['$status', 'Open'] }, 1, 0] } },
-					Closed: { $sum: { $cond: [{ $eq: ['$status', 'Closed'] }, 1, 0] } },
+					...Object.fromEntries(TICKET_STATUSES.map(status => [status, { $sum: { $cond: [{ $eq: ['$status', status] }, 1, 0] } }])),
 
 					usersData: { $push: { assignedTo: '$assignedTo', status: '$status' } }
 				}
@@ -69,26 +67,22 @@ export class TicketService {
 				$group: {
 					_id: {
 						user: '$usersData.assignedTo',
-						globalStatsId: '$_id' // Retain the global stats grouping key
+						globalStatsId: '$_id'
 					},
 					userTotal: { $sum: 1 },
 					userNew: { $sum: { $cond: [{ $eq: ['$usersData.status', 'New'] }, 1, 0] } },
 					userOpen: { $sum: { $cond: [{ $eq: ['$usersData.status', 'Open'] }, 1, 0] } },
 
-					// Preserve the global counts by taking the first seen value
+					// Preserve global counts
 					globalTotal: { $first: '$total' },
-					globalNew: { $first: '$New' },
-					globalOpen: { $first: '$Open' },
-					globalClosed: { $first: '$Closed' }
+					...Object.fromEntries(TICKET_STATUSES.map(status => [`global${status.replace(/ /g, '')}`, { $first: `$${status}` }]))
 				}
 			},
 			{
 				$group: {
 					_id: '$_id.globalStatsId',
 					total: { $first: '$globalTotal' },
-					New: { $first: '$globalNew' },
-					Open: { $first: '$globalOpen' },
-					Closed: { $first: '$globalClosed' },
+					...Object.fromEntries(TICKET_STATUSES.map(status => [status, { $first: `$global${status.replace(/ /g, '')}` }])),
 
 					userResults: {
 						$push: {
@@ -107,15 +101,18 @@ export class TicketService {
 		const results = await TicketModel.aggregate(pipeline).exec();
 		const finalResult = results[0];
 		const formattedResult: any = {
-			total: finalResult.total || 0,
-			New: finalResult.New || 0,
-			Open: finalResult.Open || 0,
-			Closed: finalResult.Closed || 0,
+			total: finalResult?.total || 0,
 		};
 
-		if (finalResult.userResults) {
+		for (const status of TICKET_STATUSES) {
+			formattedResult[status] = finalResult?.[status] || 0;
+		}
+
+		if (finalResult?.userResults) {
 			for (const { user, stats } of finalResult.userResults) {
-				formattedResult[user] = stats;
+				if (user && user !== 'Unassigned') {
+					formattedResult[user] = stats;
+				}
 			}
 		}
 		return formattedResult;
